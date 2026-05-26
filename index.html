@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transient Geometry — LLM Perceptual Representations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --mono: 'DM Mono', monospace;
+    --ink: #1a1a18;
+    --ink-2: #3d3d39;
+    --ink-3: #6b6b65;
+    --ink-4: #9a9a93;
+    --paper: #faf9f5;
+    --paper-2: #f2f1eb;
+    --paper-3: #e8e6de;
+    --accent: #3a5c8c;
+    --accent-light: #e6eef7;
+    --accent-warm: #8c4a2a;
+    --accent-warm-light: #f5ede8;
+    --teal: #1d6b58;
+    --teal-light: #e2f0eb;
+    --gold: #7a6000;
+    --gold-light: #f5f0d8;
+    --border: rgba(26,26,24,0.12);
+    --border-strong: rgba(26,26,24,0.22);
+    --radius: 4px;
+    --radius-lg: 8px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ─────────────────────────────────── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250,249,245,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 2rem;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-brand {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 13px;
+    color: var(--ink-3);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+
+  /* ── HERO ─────────────────────────────────── */
+  .hero {
+    padding: 7rem 2rem 5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    background: var(--paper-2);
+    border: 0.5px solid var(--border-strong);
+    border-radius: 2px;
+    padding: 4px 10px;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    max-width: 760px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-abstract {
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink-2);
+    max-width: 680px;
+    margin-bottom: 2.5rem;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-primary:hover { background: var(--ink-2); }
+  .btn-outline {
+    background: transparent;
+    color: var(--ink);
+    border: 0.5px solid var(--border-strong);
+  }
+  .btn-outline:hover { background: var(--paper-2); }
+
+  /* ── DIVIDER ─────────────────────────────── */
+  .divider {
+    height: 0.5px;
+    background: var(--border);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── SECTION ─────────────────────────────── */
+  section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 1.5rem;
+  }
+  section h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 400;
+    line-height: 1.25;
+    margin-bottom: 1.5rem;
+    color: var(--ink);
+  }
+  section p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--ink-2);
+    margin-bottom: 1.2rem;
+    max-width: 660px;
+  }
+
+  /* ── FINDINGS CARDS ─────────────────────── */
+  .findings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-top: 3rem;
+  }
+  .finding-card {
+    background: var(--paper);
+    padding: 2rem;
+    position: relative;
+  }
+  .finding-num {
+    font-family: var(--serif);
+    font-size: 3.5rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--paper-3);
+    position: absolute;
+    top: 1.25rem;
+    right: 1.5rem;
+  }
+  .finding-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    font-size: 18px;
+  }
+  .finding-card:nth-child(1) .finding-icon { background: var(--accent-light); }
+  .finding-card:nth-child(2) .finding-icon { background: var(--teal-light); }
+  .finding-card:nth-child(3) .finding-icon { background: var(--gold-light); }
+  .finding-card h3 {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .finding-card p {
+    font-size: 14px;
+    color: var(--ink-3);
+    margin: 0;
+    max-width: none;
+  }
+
+  /* ── FIGURE SECTION ─────────────────────── */
+  .figure-block {
+    margin: 3rem 0;
+  }
+  .figure-img {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    display: block;
+  }
+  .figure-caption {
+    margin-top: 1rem;
+    font-size: 13.5px;
+    color: var(--ink-3);
+    line-height: 1.6;
+    font-style: italic;
+    max-width: 640px;
+  }
+  .figure-caption strong {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  /* ── MODALITY TABS ─────────────────────── */
+  .tabs-wrapper { margin-top: 3rem; }
+  .tab-buttons {
+    display: flex;
+    gap: 0;
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    overflow: hidden;
+    width: fit-content;
+    margin-bottom: 2rem;
+  }
+  .tab-btn {
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-3);
+    transition: all 0.15s;
+    border-right: 0.5px solid var(--border-strong);
+    font-family: var(--sans);
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .tab-btn:hover:not(.active) { background: var(--paper-2); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .modality-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 640px) {
+    .modality-grid { grid-template-columns: 1fr; }
+  }
+  .modality-info h3 {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-bottom: 0.75rem;
+    color: var(--ink);
+  }
+  .modality-info p {
+    font-size: 14.5px;
+    max-width: none;
+  }
+  .modality-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  .tag-color { background: var(--accent-light); color: var(--accent); }
+  .tag-pitch { background: var(--teal-light); color: var(--teal); }
+  .tag-emotion { background: var(--gold-light); color: var(--gold); }
+  .tag-taste { background: var(--accent-warm-light); color: var(--accent-warm); }
+
+  /* ── TRAJECTORY VIZ ────────────────────── */
+  .trajectory-visual {
+    background: var(--paper-2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    margin: 3rem 0;
+  }
+  .trajectory-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-4);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .traj-bar-wrapper {
+    position: relative;
+    margin-bottom: 2.5rem;
+  }
+  .traj-domain-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-2);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .traj-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .traj-track {
+    height: 36px;
+    background: var(--paper-3);
+    border-radius: 2px;
+    position: relative;
+    overflow: visible;
+  }
+  .traj-fill {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+  .traj-peak {
+    position: absolute;
+    top: -10px;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 56px;
+    background: var(--ink-4);
+    opacity: 0.4;
+  }
+  .traj-peak::after {
+    content: 'peak';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-4);
+    white-space: nowrap;
+  }
+  .traj-phase-labels {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin-top: 1rem;
+    gap: 0;
+  }
+  .traj-phase {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--ink-4);
+    text-transform: uppercase;
+  }
+  .traj-phase:nth-child(2) { text-align: center; }
+  .traj-phase:nth-child(3) { text-align: right; }
+
+  /* ── METHOD ─────────────────────────────── */
+  .method-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .method-step {
+    padding: 1.5rem;
+    background: var(--paper-2);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+  }
+  .method-step h4 {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    color: var(--ink);
+  }
+  .method-step p {
+    font-size: 13px;
+    color: var(--ink-3);
+    line-height: 1.6;
+    margin: 0;
+    max-width: none;
+  }
+
+  /* ── QUOTE BLOCK ─────────────────────────── */
+  .quote-block {
+    margin: 3rem 0;
+    padding: 2rem 2.5rem;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-light);
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  }
+  .quote-block p {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--ink);
+    line-height: 1.65;
+    margin: 0;
+    max-width: none;
+  }
+
+  /* ── CITATION ─────────────────────────────── */
+  .citation-block {
+    background: var(--paper-2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+  }
+  .citation-block pre {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 6px 12px;
+    background: var(--paper);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--ink-3);
+    margin-top: 1rem;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: var(--paper-3); color: var(--ink); }
+
+  /* ── FOOTER ─────────────────────────────── */
+  footer {
+    border-top: 0.5px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  footer p {
+    font-size: 13px;
+    color: var(--ink-4);
+    max-width: none;
+    margin: 0;
+  }
+  footer a { color: var(--ink-3); }
+
+  /* ── THREAD SECTION ─────────────────────── */
+  .thread-wrapper {
+    max-width: 560px;
+    margin-top: 2.5rem;
+  }
+  .tweet {
+    padding: 1.25rem 1.5rem;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    position: relative;
+    margin-bottom: 0;
+  }
+  .tweet + .tweet {
+    border-top: none;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+  .tweet:first-child {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .tweet-connector {
+    width: 2px;
+    height: 16px;
+    background: var(--border-strong);
+    margin-left: 1.5rem;
+  }
+  .tweet-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-4);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.06em;
+  }
+  .tweet p {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: none;
+  }
+
+  /* responsive nav */
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+  }
+
+  /* ── SUMMARY LIST ────────────────────── */
+  .summary-list {
+    list-style: none;
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .summary-list li {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    border-bottom: 0.5px solid var(--border);
+    align-items: flex-start;
+    background: var(--paper);
+    transition: background 0.15s;
+  }
+  .summary-list li:last-child { border-bottom: none; }
+  .summary-list li:hover { background: var(--paper-2); }
+  .bullet-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--ink-4);
+    padding-top: 3px;
+    flex-shrink: 0;
+    width: 24px;
+  }
+  .summary-list p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: none;
+  }
+
+  /* ── AUTHORS ─────────────────────────── */
+  .authors {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .author-link {
+    font-size: 15px;
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(58,92,140,0.3);
+    padding-bottom: 1px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .author-link:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+  .author-sep {
+    color: var(--ink-4);
+    font-size: 14px;
+  }
+
+  /* ── SCROLL ANIMATION ─────────────────── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ───────────────────────────────── -->
+<nav>
+  <a class="nav-brand" href="#">lossfunk · preprint 2026</a>
+  <ul class="nav-links">
+    <li><a href="#findings">Findings</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#thread">Thread</a></li>
+    <li><a href="#cite">Cite</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ──────────────────────────────── -->
+<div class="hero">
+  <div class="hero-tag">ICML 2026 · Under Review</div>
+  <h1>Geometry of Human Perceptual Domains Emerges <em>Transiently</em> in LLM Representations</h1>
+  <div class="authors">
+    <a href="https://www.linkedin.com/in/heyysimarr" target="_blank" class="author-link">Simardeep Singh</a>
+    <span class="author-sep">&</span>
+    <a href="https://www.linkedin.com/in/paraschopra" target="_blank" class="author-link">Paras Chopra</a>
+  </div>
+  <p class="hero-abstract">
+    LLMs are trained purely on text — yet their internal representations spontaneously develop geometric structures 
+    that mirror human perception across color, pitch, emotion, and taste. These structures emerge in intermediate layers 
+    and fade before the output, revealing a hidden perceptual layer inside language models.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="https://arxiv.org" target="_blank">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      arXiv (PDF)
+    </a>
+    <a class="btn btn-outline" href="https://alphaxiv.org" target="_blank">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      alphaXiv
+    </a>
+    <a class="btn btn-outline" href="https://scholar.google.com" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14l-4-4h8z"/><circle cx="12" cy="18" r="3"/><path d="M3 7l9-5 9 5"/></svg>
+      Google Scholar
+    </a>
+    <a class="btn btn-outline" href="#results">
+      Explore Results ↓
+    </a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── FINDINGS ───────────────────────────── -->
+<section id="findings">
+  <p class="section-label">Key Findings</p>
+  <h2>Three things we discovered</h2>
+  <p>
+    By extracting layer-wise representations from open-weight transformers and comparing them to human perceptual baselines,
+    we uncovered a consistent pattern across domains and model families.
+  </p>
+
+  <div class="findings-grid fade-in">
+    <div class="finding-card">
+      <span class="finding-num">1</span>
+      <div class="finding-icon">
+        <svg width="18" height="18" fill="none" stroke="#3a5c8c" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <h3>Perceptual geometry emerges without supervision</h3>
+      <p>Color wheels, pitch spirals, emotion manifolds, and taste maps form spontaneously inside LLMs trained only on text.</p>
+    </div>
+    <div class="finding-card">
+      <span class="finding-num">2</span>
+      <div class="finding-icon">
+        <svg width="18" height="18" fill="none" stroke="#1d6b58" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h3>Each domain follows a unique emergence profile</h3>
+      <p>Taste peaks early and fades fast. Emotion peaks later and persists deep. Pitch and color lie in between, each with their own curve.</p>
+    </div>
+    <div class="finding-card">
+      <span class="finding-num">3</span>
+      <div class="finding-icon">
+        <svg width="18" height="18" fill="none" stroke="#7a6000" stroke-width="2" viewBox="0 0 24 24"><path d="M2 12 L12 2 L22 12"/><path d="M12 2 v20"/></svg>
+      </div>
+      <h3>The trajectory is rise → peak → fade</h3>
+      <p>Early layers are diffuse, intermediate layers crystallize human-like manifolds, later layers dissolve them as models shift to task-specific computation.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── MAIN FIGURE ──────────────────────── -->
+<section>
+  <p class="section-label">Overview</p>
+  <h2>Perceptual geometry across four domains</h2>
+  <p>
+    The figure below shows the central result: for color (LLaMA-3-8B), pitch (Qwen-3-4B), and emotion (Gemma-7B), 
+    we display the human perceptual baseline, the model's peak-alignment geometry, and the layer-wise alignment profile.
+  </p>
+
+  <div class="figure-block fade-in">
+    <img class="figure-img" src="fig2.png" alt="Overview figure showing perceptual geometry emergence across color, pitch, and emotion domains">
+    <p class="figure-caption">
+      <strong>Figure 2.</strong> Each row is a perceptual domain. Left column: human perceptual baseline. 
+      Middle: peak-alignment model geometry via MDS. Right: RSA and GPA alignment scores across layers, 
+      showing the rise–peak–fade trajectory.
+    </p>
+  </div>
+
+  <div class="figure-block fade-in" style="max-width: 640px;">
+    <img class="figure-img" src="fig3.png" alt="Comparison of human taste perception map and Gemma-7B peak-layer representation">
+    <p class="figure-caption">
+      <strong>Figure 3.</strong> Human perceptual map (top left) vs. Gemma-7B peak-layer LLM representation for taste (top right). 
+      Bottom: layer-wise RSA and GPA alignment scores.
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── TRAJECTORY ──────────────────────── -->
+<section>
+  <p class="section-label">The Pattern</p>
+  <h2>Rise → peak → fade</h2>
+  <p>
+    Across every model and domain we tested, perceptual geometry follows the same arc. The peak layer differs — 
+    simpler domains crystallize earlier — but the shape of the curve is strikingly consistent.
+  </p>
+
+  <div class="trajectory-visual fade-in">
+    <p class="trajectory-label">Layer-wise alignment profile (schematic)</p>
+
+    <!-- Color -->
+    <div class="traj-bar-wrapper">
+      <div class="traj-domain-label">
+        <span class="traj-dot" style="background:#3a5c8c"></span>
+        Color — peaks at early-intermediate layers, fades gradually
+      </div>
+      <div class="traj-track">
+        <div class="traj-fill" style="left:5%; width:55%; background: linear-gradient(to right, rgba(58,92,140,0.1), rgba(58,92,140,0.7), rgba(58,92,140,0.25));">
+        </div>
+        <div class="traj-peak" style="left: 38%"></div>
+      </div>
+    </div>
+
+    <!-- Pitch -->
+    <div class="traj-bar-wrapper">
+      <div class="traj-domain-label">
+        <span class="traj-dot" style="background:#1d6b58"></span>
+        Pitch — localized emergence, deforms in deeper layers
+      </div>
+      <div class="traj-track">
+        <div class="traj-fill" style="left:8%; width:45%; background: linear-gradient(to right, rgba(29,107,88,0.1), rgba(29,107,88,0.65), rgba(29,107,88,0.15));">
+        </div>
+        <div class="traj-peak" style="left: 42%"></div>
+      </div>
+    </div>
+
+    <!-- Emotion -->
+    <div class="traj-bar-wrapper">
+      <div class="traj-domain-label">
+        <span class="traj-dot" style="background:#7a6000"></span>
+        Emotion — peaks later, stays comparatively stable
+      </div>
+      <div class="traj-track">
+        <div class="traj-fill" style="left:10%; width:80%; background: linear-gradient(to right, rgba(122,96,0,0.1), rgba(122,96,0,0.65), rgba(122,96,0,0.45));">
+        </div>
+        <div class="traj-peak" style="left: 52%"></div>
+      </div>
+    </div>
+
+    <!-- Taste -->
+    <div class="traj-bar-wrapper" style="margin-bottom:0">
+      <div class="traj-domain-label">
+        <span class="traj-dot" style="background:#8c4a2a"></span>
+        Taste — emerges early, degrades rapidly
+      </div>
+      <div class="traj-track">
+        <div class="traj-fill" style="left:2%; width:30%; background: linear-gradient(to right, rgba(140,74,42,0.3), rgba(140,74,42,0.6), rgba(140,74,42,0.05));">
+        </div>
+        <div class="traj-peak" style="left: 20%"></div>
+      </div>
+    </div>
+
+    <div class="traj-phase-labels" style="margin-top:1.5rem">
+      <span class="traj-phase">Early layers</span>
+      <span class="traj-phase">Intermediate</span>
+      <span class="traj-phase">Late layers</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── RESULTS BY MODALITY ─────────────── -->
+<section id="results">
+  <p class="section-label">Results by modality</p>
+  <h2>Each domain, in depth</h2>
+
+  <div class="tabs-wrapper">
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab('color')">Color</button>
+      <button class="tab-btn" onclick="switchTab('pitch')">Pitch</button>
+      <button class="tab-btn" onclick="switchTab('emotion')">Emotion</button>
+      <button class="tab-btn" onclick="switchTab('taste')">Taste</button>
+    </div>
+
+    <!-- Color -->
+    <div class="tab-panel active fade-in" id="tab-color">
+      <div class="modality-grid">
+        <div class="modality-info">
+          <span class="modality-tag tag-color">Color · LLaMA-3-8B</span>
+          <h3>The color wheel emerges without grounding</h3>
+          <p>At peak alignment layers, color representations organize into a smooth circular manifold closely resembling the human perceptual color wheel — arising from purely linguistic statistics.</p>
+          <p>The depth-wise pattern is consistent across all four architectures: a clear rise–peak–fall profile where color alignment peaks at an intermediate layer before late-layer attenuation. Qwen-3-4B shows a brief late-layer rebound before final degradation.</p>
+        </div>
+        <div>
+          <img class="figure-img" src="fig_color.png" alt="Color geometry emergence in LLaMA-3-8B across model depth">
+          <p class="figure-caption"><strong>Fig. 6.</strong> Layer-wise emergence of 2D color geometry in LLaMA-3-8B. Human baseline (top-left), early layer (top-right), peak layer (bottom-left), final layer (bottom-right).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pitch -->
+    <div class="tab-panel" id="tab-pitch">
+      <div class="modality-grid">
+        <div class="modality-info">
+          <span class="modality-tag tag-pitch">Pitch · Qwen-3-4B</span>
+          <h3>A smooth arc encodes ordinal pitch relations</h3>
+          <p>The peak-layer geometry reveals a smooth arc-like organization consistent with continuous, ordinal human pitch perception. No discrete clusters — pitch is represented relationally, as a continuous manifold.</p>
+          <p>Early layers show weak partial ordering; intermediate layers undergo a structural transition; later layers progressively deform this organization.</p>
+        </div>
+        <div>
+          <img class="figure-img" src="fig_pitch.png" alt="3D pitch geometry emergence in Qwen-3-4B across model depth">
+          <p class="figure-caption"><strong>Fig. 17.</strong> Layer-wise emergence of 3D Pitch geometry in Qwen-3-4B. Human baseline (top-left), early layer (top-right), peak layer (bottom-left), final layer (bottom-right).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emotion -->
+    <div class="tab-panel" id="tab-emotion">
+      <div class="modality-grid">
+        <div class="modality-info">
+          <span class="modality-tag tag-emotion">Emotion · Gemma-7B</span>
+          <h3>Affective geometry persists through depth</h3>
+          <p>The peak-layer representation recovers a well-organized affective manifold aligned with the human valence–arousal structure. Unlike color, this alignment remains comparatively stable across later layers.</p>
+          <p>This persistence suggests that emotional geometry is more deeply encoded — perhaps because affective concepts are more densely represented in language than sensory modalities.</p>
+        </div>
+        <div>
+          <img class="figure-img" src="fig_emotion.png" alt="Emotion geometry emergence in Gemma-7B across model depth">
+          <p class="figure-caption"><strong>Fig. 11.</strong> Layer-wise emergence of emotion geometry in Gemma-7B. Human baseline (top-left), early layer (top-right), peak layer (bottom-left), final layer (bottom-right).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Taste -->
+    <div class="tab-panel" id="tab-taste">
+      <div class="modality-grid">
+        <div class="modality-info">
+          <span class="modality-tag tag-taste">Taste · Gemma-7B</span>
+          <h3>Early emergence, rapid degradation</h3>
+          <p>Taste representations recover a qualitatively well-formed manifold with strong geometric alignment (high GPA). The relative ordering of primary tastes and mixtures broadly matches human perceptual arrangement.</p>
+          <p>However, taste diverges from other domains: lower RSA scores and noisier layer-wise profiles indicate less precise pairwise relations, and the geometry degrades more rapidly after its peak.</p>
+        </div>
+        <div>
+          <img class="figure-img" src="fig_taste.png" alt="Taste geometry emergence in Gemma-7B across model depth">
+          <p class="figure-caption"><strong>Fig. 13.</strong> Layer-wise emergence of Taste geometry in Gemma-7B. Human baseline (top-left), early layer (top-right), peak layer (bottom-left), final layer (bottom-right).</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── METHOD ─────────────────────────── -->
+<section id="method">
+  <p class="section-label">Methodology</p>
+  <h2>A fully intrinsic approach</h2>
+  <p>
+    No probing classifiers. No fine-tuning. We extract layer-wise residual stream representations,
+    construct geometric maps, and compare them to human perceptual baselines using two complementary metrics.
+  </p>
+
+  <div class="method-steps fade-in">
+    <div class="method-step">
+      <p class="step-num">01 · Stimuli</p>
+      <h4>Minimal structured prompts</h4>
+      <p>Each stimulus (e.g. <code style="font-family:var(--mono);font-size:12px">#9B081A</code>, <em>afraid</em>, 261 Hz) is embedded in a short template designed to avoid semantic bias.</p>
+    </div>
+    <div class="method-step">
+      <p class="step-num">02 · Extract</p>
+      <h4>Layer-wise hidden states</h4>
+      <p>Last-token hidden state activations are extracted at every transformer layer from the residual stream.</p>
+    </div>
+    <div class="method-step">
+      <p class="step-num">03 · Geometry</p>
+      <h4>MDS + Isomap</h4>
+      <p>Pairwise cosine dissimilarities are projected into low-dimensional space via MDS, verified with Isomap to rule out projection artifacts.</p>
+    </div>
+    <div class="method-step">
+      <p class="step-num">04 · Compare</p>
+      <h4>RSA + Procrustes (GPA)</h4>
+      <p>Representational Similarity Analysis and Generalized Procrustes Analysis measure alignment against human perceptual baselines at each layer.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── THREAD ─────────────────────────── -->
+<section id="thread">
+  <p class="section-label">Paper summary</p>
+  <h2>The key ideas, condensed</h2>
+
+  <ul class="summary-list">
+    <li>
+      <span class="bullet-num">01</span>
+      <p>LLMs spontaneously develop structured, human-like perceptual geometry within their hidden representations — with no direct perceptual supervision at any point during training. Across color, pitch, emotion, and taste, concepts self-organize into geometric manifolds that closely parallel how humans perceptually arrange the same concepts.</p>
+    </li>
+    <li>
+      <span class="bullet-num">02</span>
+      <p>Perceptual domains do not emerge uniformly — each follows a distinct layer-wise trajectory shaped by its own complexity. Simpler relational structures such as taste crystallize in earlier layers and dissolve quickly, while richer domains like emotion build more gradually and remain coherent well into deeper layers.</p>
+    </li>
+    <li>
+      <span class="bullet-num">03</span>
+      <p>Perceptual geometry is not distributed uniformly across a model's depth — it arises transiently. Early layers hold weak or fragmented structure; intermediate layers cohere into recognizable human-like manifolds; later layers progressively dismantle these representations as the network shifts toward task-oriented processing. This "rise → peak → fade" arc appears consistently across architectures and domains.</p>
+    </li>
+    <li>
+      <span class="bullet-num">04</span>
+      <p>The entire analysis is fully intrinsic — no probing classifiers, no fine-tuning, no additional supervision. We reconstruct layer-wise geometry via MDS and Isomap, then quantify alignment against human perceptual baselines using Representational Similarity Analysis and Generalized Procrustes Analysis at every layer.</p>
+    </li>
+    <li>
+      <span class="bullet-num">05</span>
+      <p>Color representations converge into smooth, circular manifolds closely resembling the human color wheel. Emotion takes a different path: its valence–arousal structure not only peaks strongly but stays comparatively stable through later layers — suggesting affective geometry is more persistently encoded than purely sensory geometry.</p>
+    </li>
+    <li>
+      <span class="bullet-num">06</span>
+      <p>Pitch representations gradually organize into smooth, continuous manifolds that reflect the ordinal nature of human pitch perception, before deforming again at greater depth. Taste is the outlier — emerging earlier than any other domain but proving far noisier and less stable, degrading rapidly after its peak.</p>
+    </li>
+    <li>
+      <span class="bullet-num">07</span>
+      <p>Taken together, these results suggest that text-only training is sufficient for LLMs to internalize structured approximations of human perceptual space — not as a deliberate capability, but as a natural consequence of the statistical geometry embedded in language co-occurrence.</p>
+    </li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── CITE ───────────────────────────── -->
+<section id="cite">
+  <p class="section-label">Citation</p>
+  <h2>How to cite this work</h2>
+  <p>This paper is currently under review at ICML 2026. If you use this work, please cite:</p>
+
+  <div class="citation-block">
+    <pre id="bib-text">@article{transientperceptualgeometry2026,
+  title   = {Geometry of Human Perceptual Domains Emerges 
+             Transiently in LLM Representations},
+  author  = {Anonymous Authors},
+  journal = {Under review, ICML 2026},
+  year    = {2026},
+  url     = {https://arxiv.org}
+}</pre>
+    <button class="copy-btn" onclick="copyBib()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span id="copy-label">Copy BibTeX</span>
+    </button>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────── -->
+<footer>
+  <p>
+    Geometry of Human Perceptual Domains Emerges Transiently in LLM Representations · 2026 ·
+    <a href="#">lossfunk</a>
+  </p>
+</footer>
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function copyBib() {
+    const text = document.getElementById('bib-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const label = document.getElementById('copy-label');
+      label.textContent = 'Copied!';
+      setTimeout(() => label.textContent = 'Copy BibTeX', 2000);
+    });
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
